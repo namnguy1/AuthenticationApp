@@ -45,7 +45,7 @@ namespace NutritionApp.Application.Handlers
             await _repo.AddVerificationTokenAsync(tokenEntity);
 
             // Gửi email
-            var verifyUrl = $"http://localhost:5139/api/auth/verify-email?token={token}";
+            var verifyUrl = $"http://localhost:5139/api/auth/verify-email?token={Uri.EscapeDataString(token)}";
             var html = $"<p>Click <a href='{verifyUrl}'>vào đây</a> để xác thực tài khoản.</p>";
             await _emailSender.SendEmailAsync(user.Email, "Xác thực tài khoản", html);
 
