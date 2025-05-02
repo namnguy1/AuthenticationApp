@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
+using BCrypt.Net;
 
 namespace NutritionApp.Application.Handlers;
 
@@ -23,19 +24,26 @@ public class LoginQueryHandler : IRequestHandler<LoginQuery, string>
 
     public async Task<string> Handle(LoginQuery request, CancellationToken ct)
     {
+        // 1. Tìm user theo email
         var user = await _repo.GetByEmailAsync(request.Email);
         if (user == null || !user.IsActive)
             throw new Exception("Email hoặc mật khẩu không đúng, hoặc tài khoản chưa xác thực");
 
-        // TODO: Kiểm tra hash password. Demo bỏ qua.
+        // 2. So sánh mật khẩu đã hash
+        var isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+        if (!isPasswordValid)
+            throw new Exception("Email hoặc mật khẩu không đúng");
 
-        // Tạo JWT token
-        var claims = new[] {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email)
-        };
+        // 3. Tạo JWT token
+        var claims = new[]
+        {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+    };
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
         var token = new JwtSecurityToken(
             issuer: _jwtSettings.Issuer,
             audience: _jwtSettings.Audience,
@@ -45,4 +53,5 @@ public class LoginQueryHandler : IRequestHandler<LoginQuery, string>
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
 }
