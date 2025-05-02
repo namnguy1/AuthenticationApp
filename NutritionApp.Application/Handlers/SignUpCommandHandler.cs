@@ -33,10 +33,18 @@ namespace NutritionApp.Application.Handlers
             var user = new User { Id = Guid.NewGuid(), Email = request.Email, PasswordHash = hash, IsActive = false };
             await _repo.AddAsync(user);
 
-            // Generate verification token (could be JWT or random)
+            // Generate & save verification token
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            // Lưu token vào db hoặc cache (bỏ qua demo)
+            var expiry = DateTime.UtcNow.AddHours(24);
+            var tokenEntity = new EmailVerificationToken
+            {
+                UserId = user.Id,
+                Token = token,
+                Expiry = expiry
+            };
+            await _repo.AddVerificationTokenAsync(tokenEntity);
 
+            // Gửi email
             var verifyUrl = $"http://localhost:5139/api/auth/verify-email?token={token}";
             var html = $"<p>Click <a href='{verifyUrl}'>vào đây</a> để xác thực tài khoản.</p>";
             await _emailSender.SendEmailAsync(user.Email, "Xác thực tài khoản", html);

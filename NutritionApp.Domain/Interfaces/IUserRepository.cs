@@ -11,5 +11,9 @@ namespace NutritionApp.Domain.Interfaces
         Task<User?> GetByEmailAsync(string email);
         Task AddAsync(User user);
         Task UpdateAsync(User user);
+        Task<User?> GetByIdAsync(Guid id);
+        Task AddVerificationTokenAsync(EmailVerificationToken token);
+        Task<EmailVerificationToken?> GetTokenRecordAsync(string token);
+        Task RemoveVerificationTokenAsync(EmailVerificationToken token);
     }
 }

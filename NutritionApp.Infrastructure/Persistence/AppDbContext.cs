@@ -13,6 +13,8 @@ namespace NutritionApp.Infrastructure.Persistence
         : base(options) { }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

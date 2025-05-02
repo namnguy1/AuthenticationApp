@@ -17,12 +17,16 @@ namespace NutritionApp.Application.Handlers
         }
         public async Task<string> Handle(VerifyEmailCommand request, CancellationToken ct)
         {
-            // TODO: Lấy user qua token (từ DB hoặc cache). Ví dụ demo:
-            var user = await _repo.GetByEmailAsync("email@demo.com");
-            if (user == null) throw new Exception("Token không hợp lệ hoặc đã hết hạn");
+            var record = await _repo.GetTokenRecordAsync(request.Token);
+            if (record == null || record.Expiry < DateTime.UtcNow)
+                throw new Exception("Token không hợp lệ hoặc đã hết hạn");
 
+            var user = record.User!;
             user.IsActive = true;
             await _repo.UpdateAsync(user);
+
+            // Xóa token sau khi dùng
+            await _repo.RemoveVerificationTokenAsync(record);
 
             return "Xác thực tài khoản thành công";
         }

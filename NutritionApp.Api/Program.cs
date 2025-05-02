@@ -9,9 +9,11 @@ using NutritionApp.Application.Validators;
 using NutritionApp.Infrastructure.Persistence;
 using NutritionApp.Domain.Interfaces;
 using NutritionApp.Infrastructure.Repositories;
+using NutritionApp.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -49,9 +51,9 @@ builder.Services.AddAuthentication(options => {
 
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-
+builder.Services.AddTransient<IPasswordHasher, PasswordHasher>();
 // Email Sender
-builder.Services.AddTransient<NutritionApp.Domain.Interfaces.IEmailSender, NutritionApp.Infrastructure.Services.EmailSender>();
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 
 builder.Services.AddOpenApi();
@@ -61,6 +63,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger();
+    app.UseSwaggerUI();
     app.MapOpenApi();
 }
 
