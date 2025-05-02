@@ -23,7 +23,11 @@ namespace NutritionApp.Infrastructure.Services
             email.Body = new TextPart(MimeKit.Text.TextFormat.Html) { Text = htmlMessage };
 
             using var smtp = new MailKit.Net.Smtp.SmtpClient();
-            await smtp.ConnectAsync(_config["Smtp:Host"], int.Parse(_config["Smtp:Port"]), MailKit.Security.SecureSocketOptions.StartTls);
+            if (!int.TryParse(_config["Smtp:Port"], out var port))
+            {
+                throw new InvalidOperationException("Invalid SMTP port configuration.");
+            }
+            await smtp.ConnectAsync(_config["Smtp:Host"], port, MailKit.Security.SecureSocketOptions.StartTls);
             await smtp.AuthenticateAsync(_config["Smtp:User"], _config["Smtp:Pass"]);
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);

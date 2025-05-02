@@ -51,7 +51,6 @@ builder.Services.AddAuthentication(options => {
 
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddTransient<IPasswordHasher, PasswordHasher>();
 // Email Sender
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
